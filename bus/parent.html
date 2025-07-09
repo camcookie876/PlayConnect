@@ -8,8 +8,8 @@
       font-family: Arial, sans-serif;
       margin: 0; padding: 20px;
       background: linear-gradient(-45deg,#fad0c4,#ffd194,#ace0f9,#bee7e8);
-      background-size: 400% 400%;
-      animation: bg 20s ease infinite;
+      background-size:400% 400%;
+      animation:bg 20s ease infinite;
       color: #333;
     }
     @keyframes bg {
@@ -17,79 +17,54 @@
       50%  { background-position:100% 50%; }
       100% { background-position:0% 50%; }
     }
-    .container {
-      max-width: 700px;
-      margin: auto;
-    }
+    .container { max-width:700px; margin:auto; }
     .box {
-      background: #fff;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: #fff; padding:20px;
+      margin-bottom:20px; border-radius:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
     }
-    label, input, button {
-      display: block;
-      width: 100%;
-      margin: 8px 0;
+    label,input,button {
+      display:block; width:100%; margin:8px 0;
     }
     input {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1rem;
-      box-sizing: border-box;
+      padding:8px; border:1px solid #ccc;
+      border-radius:4px; font-size:1rem;
+      box-sizing:border-box;
     }
     button {
-      padding: 10px;
-      font-size: 1rem;
-      font-weight: bold;
-      border: none;
-      border-radius: 4px;
-      background: #0078d4;
-      color: #fff;
-      cursor: pointer;
+      padding:10px; font-size:1rem;
+      font-weight:bold; border:none;
+      border-radius:4px; background:#0078d4;
+      color:#fff; cursor:pointer;
     }
-    button:hover {
-      background: #005a9e;
-    }
+    button:hover { background:#005a9e; }
     table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
+      width:100%; border-collapse:collapse;
+      margin-top:10px;
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
+    th,td {
+      border:1px solid #ddd; padding:8px;
+      text-align:left;
     }
-    th {
-      background: #f7f7f7;
-    }
-    .hidden {
-      display: none;
-    }
+    th { background:#f7f7f7; }
+    .hidden { display:none; }
     #offlineOverlay {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem;
-      z-index: 9999;
-      display: none;
+      position: fixed; top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.8);
+      color:#fff; display:none;
+      align-items:center; justify-content:center;
+      font-size:1.5rem; z-index:9999;
     }
-    .disabled * {
-      pointer-events: none;
-      opacity: 0.5;
-    }
+    .disabled * { pointer-events:none; opacity:0.5; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
 </head>
 <body>
   <div id="offlineOverlay">You are offline. Please reconnect.</div>
   <div class="container">
-    <!-- Authentication -->
+
+    <!-- Auth -->
     <div id="auth" class="box">
       <h2>Login / Register</h2>
       <form id="loginForm">
@@ -107,7 +82,8 @@
 
     <!-- Dashboard -->
     <div id="dash" class="hidden">
-      <!-- GitHub PAT -->
+
+      <!-- PAT -->
       <div class="box">
         <h2>GitHub Personal Access Token</h2>
         <p>Enter a PAT (repo scope). Valid 5 minutes.</p>
@@ -116,17 +92,17 @@
       </div>
 
       <div id="controls" class="hidden">
-        <!-- Plus Subscription -->
+        <!-- Plus -->
         <div class="box">
           <h2>Plus Subscription</h2>
-          <p>Free tier: max 5 stops, 3 streets, 1 session code.</p>
+          <p>Free tier: up to 5 stops, 3 streets, 1 session code.</p>
           <p><a href="https://paypal.me/yourlink" target="_blank">
             <button>Buy Plus</button>
           </a></p>
           <button id="plusBtn">Toggle Plus</button>
         </div>
 
-        <!-- Session Expiry -->
+        <!-- Expiry -->
         <div class="box">
           <h2>Kid Session Expiry</h2>
           <p>Require re-entry if closed longer than:</p>
@@ -134,7 +110,7 @@
           <button id="updateExpiry">Update Expiry</button>
         </div>
 
-        <!-- Control Center Title & Color -->
+        <!-- Title & Color -->
         <div class="box">
           <h2>Control Center Title</h2>
           <input id="titleInput" placeholder="Control Center">
@@ -151,7 +127,7 @@
           <button id="updateBusName">Update Bus Name</button>
         </div>
 
-        <!-- Stops Table -->
+        <!-- Stops -->
         <div class="box">
           <h2>All Stops</h2>
           <button id="refreshStops">Refresh Stops</button>
@@ -163,27 +139,23 @@
           </table>
         </div>
 
-        <!-- Streets Table -->
+        <!-- Streets -->
         <div class="box">
           <h2>All Streets</h2>
           <button id="refreshStreets">Refresh Streets</button>
           <table>
-            <thead>
-              <tr><th>Street</th></tr>
-            </thead>
+            <thead><tr><th>Street</th></tr></thead>
             <tbody id="streetsTable"></tbody>
           </table>
         </div>
 
-        <!-- Session Codes -->
+        <!-- Sessions -->
         <div class="box">
           <h2>Kid Session Codes</h2>
           <button id="refreshSessions">Refresh Codes</button>
           <button id="genSession">Create Code</button>
           <table>
-            <thead>
-              <tr><th>Code</th><th>Created</th><th>Revoke</th></tr>
-            </thead>
+            <thead><tr><th>Code</th><th>Created</th><th>Revoke</th></tr></thead>
             <tbody id="sessTable"></tbody>
           </table>
         </div>
@@ -195,274 +167,210 @@
 
   <script>
   // Offline detection
-  const overlay = document.getElementById("offlineOverlay");
-  window.addEventListener("offline", () => {
-    overlay.style.display = "flex";
-    document.body.classList.add("disabled");
-  });
-  window.addEventListener("online", () => {
-    overlay.style.display = "none";
-    document.body.classList.remove("disabled");
-  });
-  if (!navigator.onLine) {
-    overlay.style.display = "flex";
-    document.body.classList.add("disabled");
-  }
+  const offOv=document.getElementById("offlineOverlay");
+  window.addEventListener("offline",()=>{offOv.style.display="flex";document.body.classList.add("disabled");});
+  window.addEventListener("online",()=>{offOv.style.display="none";document.body.classList.remove("disabled");});
+  if(!navigator.onLine) offOv.style.display="flex";
 
-  // Fetch raw JSON for config & free-tier checks
-  const RAW_URL = "https://raw.githubusercontent.com/Camcookie876/bus-stop-funtime/main/data.json";
-  async function fetchRaw() {
-    const res = await fetch(RAW_URL);
-    if (!res.ok) throw "Unable to load config";
-    return res.json();
-  }
+  // Raw JSON
+  const RAW_URL="https://raw.githubusercontent.com/Camcookie876/bus-stop-funtime/main/data.json";
+  async function fetchRaw(){ return fetch(RAW_URL).then(r=>r.json()); }
 
-  // GitHub API helper
-  const GH = {
-    owner: "Camcookie876",
-    repo: "bus-stop-funtime",
-    branch: "main",
-    token: null,
-    expires: 0,
-    init(pat) {
-      this.token = pat;
-      this.expires = Date.now() + 5*60e3;
-      setTimeout(() => this.token = null, 5*60e3 + 500);
+  // GitHub API
+  const GH={
+    owner:"Camcookie876",repo:"bus-stop-funtime",branch:"main",
+    token:null,expires:0,
+    init(pat){ this.token=pat; this.expires=Date.now()+5*60e3; setTimeout(()=>this.token=null,5*60e3+500);},
+    async fetchData(){
+      if(!navigator.onLine) throw "Offline";
+      if(!this.token||Date.now()>this.expires) throw "Session expired";
+      const url=`https://api.github.com/repos/${this.owner}/${this.repo}`+
+                `/contents/data.json?ref=${this.branch}`;
+      const r=await fetch(url,{headers:{Authorization:`token ${this.token}`}});  
+      if(!r.ok) throw await r.text();
+      const j=await r.json();
+      return {data:JSON.parse(atob(j.content)),sha:j.sha};
     },
-    async fetchData() {
-      if (!navigator.onLine) throw "Offline";
-      if (!this.token || Date.now() > this.expires) throw "Session expired";
-      const url = `https://api.github.com/repos/${this.owner}/${this.repo}` +
-                  `/contents/data.json?ref=${this.branch}`;
-      const r = await fetch(url, {
-        headers: { Authorization: `token ${this.token}` }
-      });
-      if (!r.ok) throw await r.text();
-      const j = await r.json();
-      return { data: JSON.parse(atob(j.content)), sha: j.sha };
-    },
-    async saveData(newData, sha) {
-      if (!navigator.onLine) throw "Offline";
-      if (!this.token || Date.now() > this.expires) throw "Session expired";
-      const url = `https://api.github.com/repos/${this.owner}/${this.repo}` +
-                  `/contents/data.json`;
-      const body = {
-        message: "Update via Parent Dashboard",
-        branch: this.branch,
-        content: btoa(JSON.stringify(newData, null, 2)),
-        sha
-      };
-      const r = await fetch(url, {
-        method: "PUT",
-        headers: {
-          Authorization: `token ${this.token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-      });
-      if (!r.ok) throw await r.text();
+    async saveData(d,sha){
+      if(!navigator.onLine) throw "Offline";
+      if(!this.token||Date.now()>this.expires) throw "Session expired";
+      const url=`https://api.github.com/repos/${this.owner}/${this.repo}`+
+                `/contents/data.json`;
+      const body={message:"Update via Parent Dashboard",branch:this.branch,
+                  content:btoa(JSON.stringify(d,null,2)),sha};
+      const r=await fetch(url,{method:"PUT",
+        headers:{Authorization:`token ${this.token}`, "Content-Type":"application/json"},  
+        body:JSON.stringify(body)});
+      if(!r.ok) throw await r.text();
       return r.json();
     }
   };
 
-  // Simple HTML escaper
-  function esc(str) {
-    return str.replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;");
-  }
+  // Escaper
+  const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
-  // Local parent user store
-  const PKEY = "busParents";
-  function getParents() {
-    return JSON.parse(localStorage.getItem(PKEY) || "{}");
-  }
-  function saveParents(p) {
-    localStorage.setItem(PKEY, JSON.stringify(p));
-  }
+  // Parent store
+  const PKEY="busParents";
+  function getParents(){ return JSON.parse(localStorage.getItem(PKEY)||"{}"); }
+  function saveParents(p){ localStorage.setItem(PKEY,JSON.stringify(p)); }
 
-  // Authentication
-  document.getElementById("regForm").addEventListener("submit", e => {
+  // Auth
+  document.getElementById("regForm").addEventListener("submit",e=>{
     e.preventDefault();
-    const f = e.target, u = f.user.value.trim(), p = f.pass.value;
-    const parents = getParents();
-    if (parents[u]) return alert("Username taken");
-    bcrypt.hash(p, 10, (_, hash) => {
-      parents[u] = hash;
-      saveParents(parents);
-      alert("Registered—now please log in");
-      f.reset();
-    });
+    const f=e.target,u=f.user.value.trim(),p=f.pass.value;
+    const ps=getParents();
+    if(ps[u]) return alert("Username taken");
+    bcrypt.hash(p,10,(_,h)=>{ ps[u]=h; saveParents(ps); alert("Registered—log in"); f.reset(); });
   });
-
-  document.getElementById("loginForm").addEventListener("submit", e => {
+  document.getElementById("loginForm").addEventListener("submit",e=>{
     e.preventDefault();
-    const f = e.target, u = f.user.value.trim(), p = f.pass.value;
-    const parents = getParents();
-    if (!parents[u]) return alert("No such user");
-    bcrypt.compare(p, parents[u], (_, ok) => {
-      if (!ok) return alert("Wrong password");
+    const f=e.target,u=f.user.value.trim(),p=f.pass.value;
+    const ps=getParents();
+    if(!ps[u]) return alert("No such user");
+    bcrypt.compare(p,ps[u],(_,ok)=>{ 
+      if(!ok) return alert("Wrong password");
       document.getElementById("auth").classList.add("hidden");
       document.getElementById("dash").classList.remove("hidden");
     });
   });
 
   // Connect PAT
-  document.getElementById("connectPat").addEventListener("click", async () => {
-    const pat = document.getElementById("pat").value.trim();
-    if (!pat) return alert("Enter a PAT");
+  document.getElementById("connectPat").addEventListener("click",async()=>{
+    const pat=document.getElementById("pat").value.trim();
+    if(!pat) return alert("Enter a PAT");
     GH.init(pat);
     document.getElementById("controls").classList.remove("hidden");
     await refreshUI();
   });
 
-  // Refresh UI with data.json
-  async function refreshUI() {
-    const raw = await fetchRaw();
-    // Plus toggle text
-    document.getElementById("plusBtn").textContent =
-      raw.plusActive ? "Disable Plus" : "Enable Plus";
-    // Expiry
-    document.getElementById("expiryInput").value =
-      Math.round((raw.config.kidExpiry || 600000)/60000);
-    // Title & color
-    document.getElementById("titleInput").value = raw.config.garageTitle || "";
-    document.getElementById("colorInput").value = raw.config.garageColor || "#0078d4";
-    // Bus name
-    const { data } = await GH.fetchData();
-    document.getElementById("busNameInput").value = data.busName || "";
+  // Refresh UI
+  async function refreshUI(){
+    const raw=await fetchRaw();
+    document.getElementById("plusBtn").textContent = raw.plusActive? "Disable Plus":"Enable Plus";
+    document.getElementById("expiryInput").value = Math.round((raw.config.kidExpiry||600000)/60000);
+    document.getElementById("titleInput").value = raw.config.garageTitle;
+    document.getElementById("colorInput").value = raw.config.garageColor;
+    const {data} = await GH.fetchData();
+    document.getElementById("busNameInput").value = data.busName||"";
   }
 
   // Toggle Plus
-  document.getElementById("plusBtn").addEventListener("click", async () => {
-    const { data, sha } = await GH.fetchData();
+  document.getElementById("plusBtn").addEventListener("click",async()=>{
+    const {data,sha} = await GH.fetchData();
     data.plusActive = !data.plusActive;
-    await GH.saveData(data, sha);
+    await GH.saveData(data,sha);
     await refreshUI();
-    alert("Plus is now " + (data.plusActive ? "ENABLED" : "DISABLED"));
+    alert("Plus now "+(data.plusActive? "ENABLED":"DISABLED"));
   });
 
-  // Update session expiry
-  document.getElementById("updateExpiry").addEventListener("click", async () => {
-    const mins = parseInt(document.getElementById("expiryInput").value, 10);
-    if (isNaN(mins) || mins < 1) return alert("Enter minutes ≥ 1");
-    const ms = mins * 60000;
-    const { data, sha } = await GH.fetchData();
-    data.config = data.config || {};
+  // Update Expiry
+  document.getElementById("updateExpiry").addEventListener("click",async()=>{
+    const m=parseInt(document.getElementById("expiryInput").value,10);
+    if(isNaN(m)||m<1) return alert("Enter minutes ≥1");
+    const ms=m*60000, {data,sha}=await GH.fetchData();
     data.config.kidExpiry = ms;
-    await GH.saveData(data, sha);
-    alert("Session expiry set to " + mins + " minute(s)");
+    await GH.saveData(data,sha);
+    alert("Expiry set to "+m+" minute(s)");
   });
 
-  // Update Control Center title
-  document.getElementById("updateTitle").addEventListener("click", async () => {
-    const title = document.getElementById("titleInput").value.trim();
-    if (!title) return alert("Enter a title");
-    const { data, sha } = await GH.fetchData();
-    data.config = data.config || {};
-    data.config.garageTitle = title;
-    await GH.saveData(data, sha);
+  // Update Title
+  document.getElementById("updateTitle").addEventListener("click",async()=>{
+    const t=document.getElementById("titleInput").value.trim();
+    if(!t) return alert("Enter title");
+    const {data,sha}=await GH.fetchData();
+    data.config.garageTitle = t;
+    await GH.saveData(data,sha);
     alert("Title updated");
   });
 
-  // Update header color
-  document.getElementById("updateColor").addEventListener("click", async () => {
-    const col = document.getElementById("colorInput").value;
-    const { data, sha } = await GH.fetchData();
-    data.config = data.config || {};
-    data.config.garageColor = col;
-    await GH.saveData(data, sha);
-    alert("Header color updated");
+  // Update Color
+  document.getElementById("updateColor").addEventListener("click",async()=>{
+    const c=document.getElementById("colorInput").value;
+    const {data,sha}=await GH.fetchData();
+    data.config.garageColor = c;
+    await GH.saveData(data,sha);
+    alert("Color updated");
   });
 
-  // Update bus name
-  document.getElementById("updateBusName").addEventListener("click", async () => {
-    const name = document.getElementById("busNameInput").value.trim();
-    if (!name) return alert("Enter a bus name");
-    const { data, sha } = await GH.fetchData();
-    data.busName = name;
-    await GH.saveData(data, sha);
+  // Update Bus Name
+  document.getElementById("updateBusName").addEventListener("click",async()=>{
+    const n=document.getElementById("busNameInput").value.trim();
+    if(!n) return alert("Enter bus name");
+    const {data,sha}=await GH.fetchData();
+    data.busName = n;
+    await GH.saveData(data,sha);
     alert("Bus name updated");
   });
 
-  // Refresh stops table
-  document.getElementById("refreshStops").addEventListener("click", async () => {
-    const { data } = await GH.fetchData();
-    const tb = document.getElementById("stopsTable");
-    tb.innerHTML = "";
-    data.stops.forEach(s => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${esc(s.code)}</td>
-        <td>${esc(s.name)}</td>
-        <td>${esc(s.times.join(", "))}</td>
-        <td>${esc(s.desc)}</td>
-      `;
+  // Refresh Stops
+  document.getElementById("refreshStops").addEventListener("click",async()=>{
+    const {data} = await GH.fetchData();
+    const tb=document.getElementById("stopsTable");
+    tb.innerHTML="";
+    (data.stops||[]).forEach(s=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${esc(s.code)}</td><td>${esc(s.name)}</td>
+                    <td>${esc(s.times.join(", "))}</td>
+                    <td>${esc(s.desc)}</td>`;
       tb.appendChild(tr);
     });
   });
 
-  // Refresh streets table
-  document.getElementById("refreshStreets").addEventListener("click", async () => {
-    const raw = await fetchRaw();
-    const tb = document.getElementById("streetsTable");
-    tb.innerHTML = "";
-    (raw.streets||[]).forEach(st => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${esc(st)}</td>`;
+  // Refresh Streets
+  document.getElementById("refreshStreets").addEventListener("click",async()=>{
+    const raw=await fetchRaw();
+    const tb=document.getElementById("streetsTable");
+    tb.innerHTML="";
+    (raw.streets||[]).forEach(st=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${esc(st)}</td>`;
       tb.appendChild(tr);
     });
   });
 
-  // Refresh session codes
-  document.getElementById("refreshSessions").addEventListener("click", async () => {
-    const raw = await fetchRaw();
-    const tb = document.getElementById("sessTable");
-    tb.innerHTML = "";
-    Object.entries(raw.sessions).forEach(([c, row]) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${esc(c)}</td>
-        <td>${new Date(row.created).toLocaleString()}</td>
-        <td><button onclick="revokeSession('${c}')">Revoke</button></td>
-      `;
+  // Refresh Sessions
+  document.getElementById("refreshSessions").addEventListener("click",async()=>{
+    const raw=await fetchRaw();
+    const tb=document.getElementById("sessTable");
+    tb.innerHTML="";
+    Object.entries(raw.sessions).forEach(([c,row])=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${esc(c)}</td>
+                    <td>${new Date(row.created).toLocaleString()}</td>
+                    <td><button onclick="revokeSession('${c}')">Revoke</button></td>`;
       tb.appendChild(tr);
     });
   });
 
-  // Generate session code
-  function rndCode() {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let s = "";
-    for (let i=0; i<8; i++) {
-      s += chars.charAt(Math.floor(Math.random()*chars.length));
-    }
-    return s;
+  // Generate Session
+  function rndCode(){
+    const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let c="";
+    for(let i=0;i<8;i++) c+=chars.charAt(Math.floor(Math.random()*chars.length));
+    return c;
   }
-  document.getElementById("genSession").addEventListener("click", async () => {
-    const raw = await fetchRaw();
-    if (!raw.plusActive && Object.keys(raw.sessions).length >= 1) {
-      return alert("Free tier: 1 session code max");
-    }
-    const code = rndCode();
-    const { data, sha } = await GH.fetchData();
-    data.sessions[code] = { token: GH.token, created: Date.now() };
-    await GH.saveData(data, sha);
-    alert("Share with your child:\n\n" + code);
+  document.getElementById("genSession").addEventListener("click",async()=>{
+    const raw=await fetchRaw();
+    if(!raw.plusActive && Object.keys(raw.sessions).length>=1)
+      return alert("Free tier: 1 session max");
+    const code=rndCode(), {data,sha}=await GH.fetchData();
+    data.sessions[code]={token:GH.token,created:Date.now()};
+    await GH.saveData(data,sha);
+    alert("Share with child:\n\n"+code);
     document.getElementById("refreshSessions").click();
   });
 
-  // Revoke session code
-  async function revokeSession(code) {
-    if (!confirm(`Revoke ${code}?`)) return;
-    const { data, sha } = await GH.fetchData();
-    delete data.sessions[code];
-    await GH.saveData(data, sha);
+  // Revoke
+  async function revokeSession(c){
+    if(!confirm(`Revoke ${c}?`)) return;
+    const {data,sha}=await GH.fetchData();
+    delete data.sessions[c];
+    await GH.saveData(data,sha);
     document.getElementById("refreshSessions").click();
   }
 
   // Logout
-  document.getElementById("logoutBtn").addEventListener("click", () => {
+  document.getElementById("logoutBtn").addEventListener("click",()=>{
     location.reload();
   });
   </script>

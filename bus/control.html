@@ -10,97 +10,79 @@
       background: linear-gradient(-45deg,#ff9a9e,#fad0c4,#a1c4fd,#c2e9fb);
       background-size:400% 400%;
       animation:bg 12s ease infinite;
-      overflow-x:hidden;
     }
     @keyframes bg {
-      0%   {background-position:0%   50%;}
-      50%  {background-position:100% 50%;}
-      100% {background-position:0%   50%;}
+      0%   { background-position:0%   50%; }
+      50%  { background-position:100% 50%; }
+      100% { background-position:0%   50%; }
     }
+    #offlineOverlay {
+      position: fixed; top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.8);
+      color:#fff;
+      display:none;
+      align-items:center; justify-content:center;
+      font-size:1.5rem; z-index:9999;
+    }
+    .disabled * { pointer-events:none; opacity:0.5; }
     header {
-      padding: 20px;
-      color: #fff;
-      text-align: center;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      background-color: #0078d4; /* overridden by config */
+      padding:20px;
+      background-color:#0078d4; /* will be overridden if Plus */
+      color:#fff;
+      text-align:center;
+      border-radius:8px;
+      margin-bottom:20px;
     }
-    .container {
-      max-width: 600px;
-      margin: auto;
-    }
+    .container { max-width:600px; margin:auto; }
     .box {
-      background: #fff;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background:#fff; padding:20px;
+      margin-bottom:20px; border-radius:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
     }
-    label, input, textarea, button {
-      display: block;
-      width: 100%;
-      margin: 8px 0;
+    label,input,textarea,button {
+      display:block; width:100%; margin:8px 0;
     }
-    input, textarea {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-      font-size: 1rem;
+    input,textarea {
+      padding:8px; border:1px solid #ccc;
+      border-radius:4px; font-size:1rem;
+      box-sizing:border-box;
     }
     button {
-      padding: 10px;
-      font-size: 1rem;
-      font-weight: bold;
-      border: none;
-      border-radius: 4px;
-      background: #0078d4;
-      color: #fff;
-      cursor: pointer;
+      padding:10px; font-size:1rem;
+      font-weight:bold; border:none;
+      border-radius:4px;
+      background:#0078d4; color:#fff;
+      cursor:pointer;
     }
-    button:hover { background: #005a9e; }
-    button.danger { background: #d9534f; }
-    ul { list-style: none; padding: 0; }
+    button:hover { background:#005a9e; }
+    button.danger { background:#d9534f; }
+    ul { list-style:none; padding:0; }
     ul li {
-      padding: 10px 0;
-      border-bottom: 1px solid #ddd;
+      padding:10px 0; border-bottom:1px solid #ddd;
     }
-    .hidden { display: none; }
-    .error { color: #d9534f; }
-    #offlineOverlay {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; z-index: 9999; display: none;
-    }
-    .disabled * { pointer-events: none; opacity: 0.5; }
+    .hidden { display:none; }
+    .error { color:#d9534f; }
   </style>
 </head>
 <body>
-
   <div id="offlineOverlay">You are offline. Please reconnect.</div>
 
   <header id="mainHeader">
-    <h1 id="garageTitle">Loading…</h1>
+    <h1 id="garageTitle">Control Center</h1>
   </header>
 
   <div class="container">
-
-    <!-- Step 1: Parent session code -->
     <div id="connectBox" class="box">
       <h2>Enter Parent Session Code</h2>
-      <p>Get the 8-character code from Parent Dashboard.</p>
+      <p>Get your 8-character code from the Parent Dashboard.</p>
       <input id="sessionCode" placeholder="Session Code">
       <button onclick="manualConnect()">Connect</button>
       <p id="connectError" class="error"></p>
       <p><a href="parent.html">Parent Dashboard</a></p>
     </div>
 
-    <!-- Step 2: Main UI -->
     <div id="mainUI" class="hidden">
-
       <!-- Announcement (Plus only) -->
       <div id="announceBox" class="box hidden">
         <h2>Announcement</h2>
@@ -114,7 +96,7 @@
         <button onclick="updateBusName()">Update Bus Name</button>
       </div>
 
-      <!-- Stops Manager -->
+      <!-- Stops -->
       <div class="box">
         <h2>Manage Stops</h2>
         <form id="stopForm">
@@ -129,11 +111,10 @@
           <button type="submit">Save Stop</button>
           <button type="button" class="danger" onclick="clearStops()">Clear All Stops</button>
         </form>
-        <h3>Existing Stops</h3>
         <ul id="stopList"></ul>
       </div>
 
-      <!-- Streets Manager -->
+      <!-- Streets -->
       <div class="box">
         <h2>Manage Streets</h2>
         <form id="streetForm">
@@ -142,24 +123,20 @@
           <button type="submit">Save Street</button>
           <button type="button" class="danger" onclick="clearStreets()">Clear All Streets</button>
         </form>
-        <h3>Existing Streets</h3>
         <ul id="streetList"></ul>
       </div>
 
       <!-- Plus-only Customizations -->
       <div id="plusBox" class="box hidden">
         <h2>Plus Customizations</h2>
-        <!-- Background Color -->
-        <label>Header Background Color</label>
+        <label>Header Background</label>
         <input id="bgColor" type="color">
         <button onclick="saveBgColor()">Save Color</button>
 
-        <!-- Announcement Editor -->
         <label>Announcement Text</label>
         <textarea id="announcementEditor" placeholder="Type announcement…"></textarea>
         <button onclick="saveAnnouncement()">Save Announcement</button>
 
-        <!-- Export Data -->
         <button onclick="exportData()">Export All Data (JSON)</button>
       </div>
 
@@ -171,93 +148,82 @@
   </div>
 
   <script>
-  // --- Offline detection ---
+  // Offline detection
   const overlay = document.getElementById("offlineOverlay");
   window.addEventListener("offline", ()=>{ overlay.style.display="flex"; document.body.classList.add("disabled"); });
   window.addEventListener("online", ()=>{ overlay.style.display="none"; document.body.classList.remove("disabled"); });
   if (!navigator.onLine) overlay.style.display="flex";
 
-  // --- Raw config fetch (unauthenticated) ---
-  const RAW_URL = 
-    "https://raw.githubusercontent.com/Camcookie876/bus-stop-funtime/main/data.json";
+  // Raw config
+  const RAW_URL = "https://raw.githubusercontent.com/Camcookie876/bus-stop-funtime/main/data.json";
   async function fetchRaw(){ return fetch(RAW_URL).then(r=>r.json()); }
 
-  // --- GitHub API helper ---
+  // GitHub API
   const GH = {
-    owner:"Camcookie876",
-    repo:"bus-stop-funtime",
-    branch:"main",
-    token:null,
-    expires:0,
-    init(pat) {
-      this.token = pat;
-      this.expires = Date.now() + 5*60e3;
-      setTimeout(()=>this.token=null,5*60e3+500);
+    owner:"Camcookie876", repo:"bus-stop-funtime", branch:"main",
+    token:null, expires:0,
+    init(pat){ this.token=pat; this.expires=Date.now()+300000; setTimeout(()=>this.token=null,300500); },
+    async fetchData(){
+      if(!navigator.onLine) throw "Offline";
+      if(!this.token||Date.now()>this.expires) throw "Session expired";
+      const url = `https://api.github.com/repos/${this.owner}/${this.repo}` +
+                  `/contents/data.json?ref=${this.branch}`;
+      const res = await fetch(url,{ headers:{ Authorization:`token ${this.token}` } });
+      if(!res.ok) throw await res.text();
+      const j = await res.json();
+      return { data:JSON.parse(atob(j.content)), sha: j.sha };
     },
-    async fetchData() {
-      if (!navigator.onLine) throw "Offline";
-      if (!this.token || Date.now()>this.expires) throw "Session expired";
-      const url = `https://api.github.com/repos/${this.owner}/${this.repo}`
-                + `/contents/data.json?ref=${this.branch}`;
-      const r = await fetch(url, {
-        headers:{ Authorization:`token ${this.token}` }
-      });
-      if (!r.ok) throw await r.text();
-      const j = await r.json();
-      return { data:JSON.parse(atob(j.content)), sha:j.sha };
-    },
-    async saveData(d,sha) {
-      if (!navigator.onLine) throw "Offline";
-      if (!this.token||Date.now()>this.expires) throw "Session expired";
-      const url = `https://api.github.com/repos/${this.owner}/${this.repo}`
-                + `/contents/data.json`;
+    async saveData(d, sha){
+      if(!navigator.onLine) throw "Offline";
+      if(!this.token||Date.now()>this.expires) throw "Session expired";
+      const url = `https://api.github.com/repos/${this.owner}/${this.repo}` +
+                  `/contents/data.json`;
       const body = {
         message:"Update via Control Center",
         branch:this.branch,
         content:btoa(JSON.stringify(d,null,2)),
         sha
       };
-      const r = await fetch(url, {
+      const res = await fetch(url,{
         method:"PUT",
         headers:{
           Authorization:`token ${this.token}`,
           "Content-Type":"application/json"
         },
-        body: JSON.stringify(body)
+        body:JSON.stringify(body)
       });
-      if (!r.ok) throw await r.text();
-      return r.json();
+      if(!res.ok) throw await res.text();
+      return res.json();
     }
   };
 
-  // --- Utilities ---
+  // Utilities
   const esc = s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   const banned=["stupid","idiot","hate","kill"];
   const hasBully=s=>banned.some(w=>s.toLowerCase().includes(w));
 
-  // --- Session persistence ---
+  // Session persistence
   const KEY_CODE="kidSessionCode", KEY_LAST="kidSessionLast";
-  let sha="", editStop=null, editStreet=null;
+  let sha="", editStopIdx=null, editStreetIdx=null;
 
   window.addEventListener("beforeunload", ()=>{
     localStorage.setItem(KEY_LAST, Date.now());
   });
 
   window.addEventListener("DOMContentLoaded", async ()=>{
-    // load config
+    // Apply config
     const cfg = await fetchRaw();
     document.getElementById("garageTitle").textContent = cfg.config.garageTitle;
     document.getElementById("mainHeader").style.backgroundColor = cfg.config.garageColor;
-    // announcement
-    if (cfg.config.announcement) {
+    if(cfg.config.announcement){
       document.getElementById("announceBox").classList.remove("hidden");
       document.getElementById("announcementDisplay").textContent = cfg.config.announcement;
     }
-    // auto-connect?
-    const code = localStorage.getItem(KEY_CODE),
-          last = +localStorage.getItem(KEY_LAST),
-          expiry = cfg.config.kidExpiry;
-    if (code && (!last || Date.now()-last < expiry)) {
+    // Auto-connect
+    const code=localStorage.getItem(KEY_CODE),
+          last=+localStorage.getItem(KEY_LAST),
+          expiry=cfg.config.kidExpiry;
+    if(code && (!last || Date.now()-last < expiry)){
       connect(code);
     }
   });
@@ -269,18 +235,18 @@
   }
 
   async function connect(code){
-    document.getElementById("connectError").textContent="";
     try {
+      document.getElementById("connectError").textContent="";
       const cfg = await fetchRaw();
-      if (!cfg.sessions[code]) throw "Invalid code";
+      if(!cfg.sessions[code]) throw "Invalid code";
       GH.init(cfg.sessions[code].token);
       const d0 = await GH.fetchData();
       sha = d0.sha;
-      localStorage.setItem(KEY_CODE, code);
-      localStorage.setItem(KEY_LAST, Date.now());
+      localStorage.setItem(KEY_CODE,code);
+      localStorage.setItem(KEY_LAST,Date.now());
       document.getElementById("connectBox").classList.add("hidden");
       document.getElementById("mainUI").classList.remove("hidden");
-      if (cfg.plusActive) document.getElementById("plusBox").classList.remove("hidden");
+      if(cfg.plusActive) document.getElementById("plusBox").classList.remove("hidden");
       renderAll();
     } catch(e){
       document.getElementById("connectError").textContent = e;
@@ -293,69 +259,64 @@
     location.reload();
   }
 
+  // Render
   async function renderAll(){
-    const d0 = await GH.fetchData(),
-          data = d0.data;
+    const d0 = await GH.fetchData(), data = d0.data;
     sha = d0.sha;
-    renderStops(data.stops || []);
-    renderStreets(data.streets || []);
+    renderStops(data.stops||[]);
+    renderStreets(data.streets||[]);
   }
 
   function renderStops(stops){
-    const ul=document.getElementById("stopList");
+    const ul = document.getElementById("stopList");
     ul.innerHTML = stops.length
-      ? stops.map((s,i)=>
-          `<li>
-            <strong>${esc(s.code)}</strong> – ${esc(s.name)}<br>
-            Times: ${s.times.map(esc).join(", ")}<br>
-            ${esc(s.desc)}<br>
-            <button onclick="editStop(${i})">Edit</button>
-            <button onclick="deleteStop(${i})">Delete</button>
-          </li>`
-        ).join("")
+      ? stops.map((s,i)=>`
+        <li>
+          <strong>${esc(s.code)}</strong> – ${esc(s.name)}<br>
+          Times: ${s.times.map(esc).join(", ")}<br>
+          ${esc(s.desc)}<br>
+          <button onclick="editStop(${i})">Edit</button>
+          <button onclick="deleteStop(${i})">Delete</button>
+        </li>`).join("")
       : "<li>No stops yet</li>";
   }
 
   function renderStreets(streets){
-    const ul=document.getElementById("streetList");
+    const ul = document.getElementById("streetList");
     ul.innerHTML = streets.length
-      ? streets.map((st,i)=>
-          `<li>
-            ${esc(st)}
-            <button onclick="editStreet(${i})">Edit</button>
-            <button onclick="deleteStreet(${i})">Delete</button>
-          </li>`
-        ).join("")
+      ? streets.map((st,i)=>`
+        <li>
+          ${esc(st)} 
+          <button onclick="editStreet(${i})">Edit</button>
+          <button onclick="deleteStreet(${i})">Delete</button>
+        </li>`).join("")
       : "<li>No streets yet</li>";
   }
 
-  // --- Stops CRUD ---
-  document.getElementById("stopForm")
-    .addEventListener("submit", async e=>{
-      e.preventDefault();
-      const f=e.target,
-            code=f.code.value.trim(),
-            name=f.name.value.trim(),
-            times=f.times.value.split(",").map(t=>t.trim()).filter(Boolean),
-            desc=f.desc.value.trim();
-      if (!code||!name||!times.length) return alert("All fields required");
-      if (hasBully(code+name+desc)) return alert("Avoid unkind words");
-      const cfg = await fetchRaw();
-      if (editStop===null && !cfg.plusActive && (cfg.stops||[]).length>=5)
-        return alert("Free tier: max 5 stops");
-      const d0=await GH.fetchData(), arr=d0.data.stops||[];
-      if (editStop!==null) arr[editStop]={code,name,times,desc}, editStop=null;
-      else arr.push({code,name,times,desc});
-      const r=await GH.saveData({...d0.data,stops:arr}, sha);
-      sha=r.content.sha; f.reset(); renderStops(arr);
-    });
+  // Stops CRUD
+  document.getElementById("stopForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const f=e.target, code=f.code.value.trim(), name=f.name.value.trim(),
+          times=f.times.value.split(",").map(t=>t.trim()).filter(Boolean),
+          desc=f.desc.value.trim();
+    if(!code||!name||!times.length) return alert("All fields required");
+    if(hasBully(code+name+desc)) return alert("Avoid unkind words");
+    const cfg = await fetchRaw();
+    if(editStopIdx===null && !cfg.plusActive && (cfg.stops||[]).length>=5)
+      return alert("Free tier: 5 stops max");
+    const d0=await GH.fetchData(), arr=d0.data.stops||[];
+    if(editStopIdx!==null) arr[editStopIdx]={code,name,times,desc}, editStopIdx=null;
+    else arr.push({code,name,times,desc});
+    const r = await GH.saveData({...d0.data,stops:arr}, sha);
+    sha=r.content.sha; f.reset(); renderStops(arr);
+  });
 
   function editStop(i){
     GH.fetchData().then(({data})=>{
       const s=data.stops[i], f=document.getElementById("stopForm");
       f.code.value=s.code; f.name.value=s.name;
       f.times.value=s.times.join(", "); f.desc.value=s.desc;
-      editStop=i;
+      editStopIdx=i;
     });
   }
 
@@ -363,7 +324,7 @@
     if(!confirm("Delete stop?")) return;
     const d0=await GH.fetchData();
     d0.data.stops.splice(i,1);
-    const r=await GH.saveData(d0.data, sha);
+    const r=await GH.saveData(d0.data,sha);
     sha=r.content.sha; renderStops(d0.data.stops);
   }
 
@@ -376,26 +337,25 @@
     });
   }
 
-  // --- Streets CRUD ---
-  document.getElementById("streetForm")
-    .addEventListener("submit", async e=>{
-      e.preventDefault();
-      const name=e.target.street.value.trim();
-      if (!name) return alert("Enter street name");
-      const cfg=await fetchRaw();
-      if (editStreet===null && !cfg.plusActive && (cfg.streets||[]).length>=3)
-        return alert("Free tier: max 3 streets");
-      const d0=await GH.fetchData(), arr=d0.data.streets||[];
-      if (editStreet!==null) arr[editStreet]=name, editStreet=null;
-      else arr.push(name);
-      const r=await GH.saveData({...d0.data,streets:arr}, sha);
-      sha=r.content.sha; e.target.reset(); renderStreets(arr);
-    });
+  // Streets CRUD
+  document.getElementById("streetForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const name=e.target.street.value.trim();
+    if(!name) return alert("Enter street name");
+    const cfg=await fetchRaw();
+    if(editStreetIdx===null && !cfg.plusActive && (cfg.streets||[]).length>=3)
+      return alert("Free tier: 3 streets max");
+    const d0=await GH.fetchData(), arr=d0.data.streets||[];
+    if(editStreetIdx!==null) arr[editStreetIdx]=name, editStreetIdx=null;
+    else arr.push(name);
+    const r=await GH.saveData({...d0.data,streets:arr},sha);
+    sha=r.content.sha; e.target.reset(); renderStreets(arr);
+  });
 
   function editStreet(i){
     GH.fetchData().then(({data})=>{
-      document.forms.streetForm.street.value = data.streets[i];
-      editStreet=i;
+      document.forms.streetForm.street.value=data.streets[i];
+      editStreetIdx=i;
     });
   }
 
@@ -410,14 +370,13 @@
   function clearStreets(){
     if(!confirm("Clear all streets?")) return;
     GH.fetchData().then(d0=>{
-      d0.data.streets=[];
-      GH.saveData(d0.data,sha).then(r=>{
+      d0.data.streets=[]; GH.saveData(d0.data,sha).then(r=>{
         sha=r.content.sha; renderStreets([]);
       });
     });
   }
 
-  // --- Plus-only customizations ---
+  // Plus-only customizations
   async function saveBgColor(){
     const col=document.getElementById("bgColor").value;
     const d0=await GH.fetchData(); d0.data.config.garageColor=col;
@@ -434,14 +393,14 @@
 
   function exportData(){
     GH.fetchData().then(d0=>{
-      const blob=new Blob([JSON.stringify(d0.data,null,2)],{type:"application/json"});
-      const url=URL.createObjectURL(blob), a=document.createElement("a");
+      const blob=new Blob([JSON.stringify(d0.data,null,2)],{type:"application/json"}),
+            url=URL.createObjectURL(blob), a=document.createElement("a");
       a.href=url; a.download="data.json"; document.body.appendChild(a);
       a.click(); a.remove(); URL.revokeObjectURL(url);
     });
   }
 
-  // --- Bus name update ---
+  // Update bus name
   async function updateBusName(){
     const name=document.getElementById("busNameInput").value.trim();
     if(!name) return alert("Enter bus name");
