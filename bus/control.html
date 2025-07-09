@@ -155,7 +155,7 @@
   if (!navigator.onLine) overlay.style.display="flex";
 
   // Raw config
-  const RAW_URL = "https://raw.githubusercontent.com/Camcookie876/bus-stop-funtime/main/data.json";
+  const RAW_URL = "https://camcookie876.github.io/PlayConnect/bus/data.json"; // 🔄 local fetch, just like user.html
   async function fetchRaw(){ return fetch(RAW_URL).then(r=>r.json()); }
 
   // GitHub API
