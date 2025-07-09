@@ -21,12 +21,9 @@
     button:hover{background:#005a9e;}button.danger{background:#d9534f;}
     ul{list-style:none;padding:0;}ul li{padding:10px 0;border-bottom:1px solid #ddd;}
     .hidden{display:none;} .error{color:#d9534f;}
-    #offlineOverlay{
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      background:rgba(0,0,0,0.8);color:#fff;
-      display:flex;align-items:center;justify-content:center;
-      font-size:1.5rem;z-index:9999;display:none;
-    }
+    #offlineOverlay{position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.8);color:#fff;display:flex;
+      align-items:center;justify-content:center;font-size:1.5rem;z-index:9999;display:none;}
     .disabled *{pointer-events:none;opacity:0.5;}
   </style>
 </head>
@@ -35,39 +32,33 @@
   <header><h1>Camcookie Play Conect - Bus Garage</h1></header>
   <div class="container">
 
-    <!-- STEP 1: Parent session code -->
+    <!-- STEP 1: SESSION ENTRY -->
     <div id="connectBox" class="box">
       <h2>Enter Parent Session Code</h2>
       <p>Get the 8-character code from your parent.</p>
       <input id="sessionCode" placeholder="Session Code">
-      <button onclick="connect()">Connect</button>
+      <button onclick="manualConnect()">Connect</button>
       <p id="connectError" class="error"></p>
       <p><a href="parent.html">Parent Dashboard</a></p>
     </div>
 
-    <!-- STEP 2: Bus name & stops -->
+    <!-- STEP 2: MANAGEMENT UI -->
     <div id="mainUI" class="hidden">
       <div class="box">
         <h2>Bus Name</h2>
         <input id="busNameInput" placeholder="Enter bus name">
         <button onclick="updateBusName()">Update Bus Name</button>
       </div>
-
       <div class="box">
         <h2>Manage Bus Stops</h2>
         <form id="stopForm">
-          <label>Code</label>
-          <input name="code" placeholder="e.g. A1" required>
-          <label>Name</label>
-          <input name="name" placeholder="e.g. Main Street" required>
+          <label>Code</label><input name="code" placeholder="e.g. A1" required>
+          <label>Name</label><input name="name" placeholder="e.g. Main Street" required>
           <label>Times (comma-separated)</label>
           <input name="times" placeholder="e.g. 8:00 AM, 2:30 PM" required>
-          <label>Description</label>
-          <textarea name="desc" placeholder="Add fun notes"></textarea>
+          <label>Description</label><textarea name="desc" placeholder="Add fun notes"></textarea>
           <button type="submit">Save Stop</button>
-          <button type="button" class="danger" onclick="clearAll()">
-            Clear All Stops
-          </button>
+          <button type="button" class="danger" onclick="clearAll()">Clear All Stops</button>
         </form>
         <h3>Existing Stops</h3>
         <ul id="stopList"></ul>
@@ -76,48 +67,50 @@
     </div>
 
   </div>
+
   <script>
-  // OFFLINE DETECTION
+  // OFFLINE HANDLING
   const overlay = document.getElementById("offlineOverlay");
   function goOffline(){ overlay.style.display="flex"; document.body.classList.add("disabled"); }
   function goOnline(){ overlay.style.display="none"; document.body.classList.remove("disabled"); }
-  window.addEventListener("offline",goOffline);
-  window.addEventListener("online",goOnline);
+  window.addEventListener("offline", goOffline);
+  window.addEventListener("online", goOnline);
   if(!navigator.onLine) goOffline();
 
-  // GitHubStorage Helper
+  // RAW DATA fetch (unauthenticated)
+  const RAW_URL = `https://raw.githubusercontent.com/camcookie876/bus-stop-funtime/main/data.json`;
+  async function fetchRaw(){ return fetch(RAW_URL).then(r=>r.json()); }
+
+  // GITHUB API helper
   const GH = {
-    owner:"YOUR_GH_USERNAME", repo:"bus-stop-funtime", branch:"main",
+    owner:"camcookie876", repo:"bus-stop-funtime", branch:"main",
     token:null, expires:0,
-    init(owner,repo,pat,branch="main"){
-      this.owner=owner; this.repo=repo; this.branch=branch;
+    init(pat){
       this.token=pat; this.expires=Date.now()+5*60e3;
       setTimeout(()=>this.token=null,5*60e3+1000);
     },
     async fetchData(){
       if(!navigator.onLine) throw "Offline";
       if(!this.token||Date.now()>this.expires) throw "Session expired";
-      const url = `https://api.github.com/repos/${this.owner}/${this.repo}`+
-                  `/contents/data.json?ref=${this.branch}`;
-      const res = await fetch(url,{
-        headers:{ Authorization:`token ${this.token}` }
-      });
-      if(!res.ok) throw await res.text();
-      const {content,sha} = await res.json();
-      return { data:JSON.parse(atob(content)), sha };
+      const url=`https://api.github.com/repos/${this.owner}/${this.repo}`
+                +`/contents/data.json?ref=${this.branch}`;
+      const r = await fetch(url,{headers:{Authorization:`token ${this.token}`}});
+      if(!r.ok) throw await r.text();
+      const j=await r.json();
+      return {data:JSON.parse(atob(j.content)), sha:j.sha};
     },
-    async saveData(newData, sha){
+    async saveData(d,sha){
       if(!navigator.onLine) throw "Offline";
       if(!this.token||Date.now()>this.expires) throw "Session expired";
-      const url = `https://api.github.com/repos/${this.owner}/${this.repo}`+
-                  `/contents/data.json`;
-      const body = {
+      const url=`https://api.github.com/repos/${this.owner}/${this.repo}`
+                +`/contents/data.json`;
+      const body={
         message:"Update via Camcookie Play Conect",
         branch:this.branch,
-        content:btoa(JSON.stringify(newData,null,2)),
+        content:btoa(JSON.stringify(d,null,2)),
         sha
       };
-      const res = await fetch(url,{
+      const r = await fetch(url,{
         method:"PUT",
         headers:{
           Authorization:`token ${this.token}`,
@@ -125,150 +118,153 @@
         },
         body:JSON.stringify(body)
       });
-      if(!res.ok) throw await res.text();
-      return await res.json();
+      if(!r.ok) throw await r.text();
+      return r.json();
     }
   };
 
-  // Utilities
-  const esc = s => s.replace(/&/g,"&amp;")
-                    .replace(/</g,"&lt;")
-                    .replace(/>/g,"&gt;");
-  const banned = ["stupid","idiot","hate","kill"];
-  const hasBully = s => banned.some(w=>s.toLowerCase().includes(w));
+  // UTILITIES
+  const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const banned=["stupid","idiot","hate","kill"];
+  const hasBully=s=>banned.some(w=>s.toLowerCase().includes(w));
 
-  let currentSHA = "", editIdx = null;
-  const FREE_MAX_STOPS = 5;
+  // SESSION PERSISTENCE
+  const KEY_CODE="kidSessionCode",
+        KEY_LAST="kidSessionLast",
+        KEY_EXP="kidExpiry";
 
-  // 1) Connect via parent session code
-  async function connect(){
-    if(!navigator.onLine){ alert("Offline"); return; }
-    const code = document.getElementById("sessionCode").value.trim();
-    const err  = document.getElementById("connectError");
-    err.textContent = "";
-    if(!code){ err.textContent="Enter the session code"; return; }
+  let currentSHA="", editIdx=null;
+
+  // on unload, record last active time
+  window.addEventListener("beforeunload",()=>{
+    localStorage.setItem(KEY_LAST, Date.now());
+  });
+
+  // auto-connect if within expiry
+  window.addEventListener("DOMContentLoaded", async ()=>{
+    const raw = await fetchRaw();
+    const expiry = raw.config?.kidExpiry || 600000;
+    const code = localStorage.getItem(KEY_CODE);
+    const last = parseInt(localStorage.getItem(KEY_LAST),10);
+    if(code && (!last || Date.now()-last < expiry)){
+      connectWithCode(code);
+    }
+  });
+
+  // manual connect
+  async function manualConnect(){
+    const code=document.getElementById("sessionCode").value.trim();
+    if(!code){ return document.getElementById("connectError").textContent="Enter code"; }
+    connectWithCode(code);
+  }
+
+  // core connect
+  async function connectWithCode(code){
+    document.getElementById("connectError").textContent="";
     try {
-      // dummy init to read sessions
-      GH.init(GH.owner, GH.repo, "fake", GH.branch);
-      const { data, sha } = await GH.fetchData();
-      if(!data.sessions[code]){
-        err.textContent="Invalid code"; return;
-      }
-      // real init with parent's PAT
-      const parentPAT = data.sessions[code].token;
-      GH.init(GH.owner, GH.repo, parentPAT, GH.branch);
-      currentSHA = sha;
+      const raw=await fetchRaw();
+      if(!raw.sessions[code]) throw "Invalid session code";
+      const pat=raw.sessions[code].token;
+      GH.init(pat);
+      const {data,sha}=await GH.fetchData();
+      currentSHA=sha;
+      localStorage.setItem(KEY_CODE, code);
+      localStorage.setItem(KEY_LAST, Date.now());
       document.getElementById("connectBox").classList.add("hidden");
       document.getElementById("mainUI").classList.remove("hidden");
       renderAll();
     } catch(e){
-      err.textContent = e.toString();
+      document.getElementById("connectError").textContent = e;
     }
   }
 
-  // 2) Render busName + stops
+  function disconnect(){
+    localStorage.removeItem(KEY_CODE);
+    localStorage.removeItem(KEY_LAST);
+    location.reload();
+  }
+
+  // render & CRUD
   async function renderAll(){
-    const { data, sha } = await GH.fetchData();
-    currentSHA = sha;
-    document.getElementById("busNameInput").value = data.busName || "";
-    const ul = document.getElementById("stopList");
-    ul.innerHTML = "";
+    const {data,sha} = await GH.fetchData();
+    currentSHA=sha;
+    document.getElementById("busNameInput").value=data.busName||"";
+    const ul=document.getElementById("stopList"); ul.innerHTML="";
     if(!data.stops.length){
-      ul.innerHTML = "<li>No stops yet</li>"; return;
+      ul.innerHTML="<li>No stops yet</li>"; return;
     }
     data.stops.forEach((s,i)=>{
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <strong>${esc(s.code)}</strong> – ${esc(s.name)}<br>
+      const li=document.createElement("li");
+      li.innerHTML=`<strong>${esc(s.code)}</strong> – ${esc(s.name)}<br>
         Times: ${s.times.map(esc).join(", ")}<br>
         ${esc(s.desc)}<br>
         <button onclick="startEdit(${i})">Edit</button>
-        <button onclick="deleteStop(${i})">Delete</button>
-      `;
+        <button onclick="deleteStop(${i})">Delete</button>`;
       ul.appendChild(li);
     });
   }
 
-  // Update bus name
   async function updateBusName(){
-    if(!navigator.onLine){ alert("Offline"); return; }
-    const name = document.getElementById("busNameInput").value.trim();
-    if(!name){ alert("Enter a bus name"); return; }
-    const { data } = await GH.fetchData();
-    data.busName = name;
-    const save = await GH.saveData(data, currentSHA);
-    currentSHA = save.content.sha;
+    const name=document.getElementById("busNameInput").value.trim();
+    if(!name) return alert("Enter bus name");
+    const {data}=await GH.fetchData();
+    data.busName=name;
+    const res=await GH.saveData(data,currentSHA);
+    currentSHA=res.content.sha;
     alert("Bus name updated");
   }
 
-  // Handle stop form
-  document.getElementById("stopForm")
-    .addEventListener("submit", async e => {
-      e.preventDefault();
-      if(!navigator.onLine){ alert("Offline"); return; }
-      const f     = e.target;
-      const code  = f.code.value.trim();
-      const name  = f.name.value.trim();
-      const times = f.times.value.split(",").map(t=>t.trim()).filter(Boolean);
-      const desc  = f.desc.value.trim();
-      if(!code||!name||!times.length)
-        return alert("Code, name & at least one time required");
-      if(hasBully(code+name+desc))
-        return alert("Please avoid unkind words");
+  document.getElementById("stopForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const f=e.target,
+          code=f.code.value.trim(),
+          name=f.name.value.trim(),
+          times=f.times.value.split(",").map(t=>t.trim()).filter(Boolean),
+          desc=f.desc.value.trim();
+    if(!code||!name||!times.length)
+      return alert("Code, name & times required");
+    if(hasBully(code+name+desc))
+      return alert("Please avoid unkind words");
 
-      const { data } = await GH.fetchData();
+    const raw=await fetchRaw();
+    if(editIdx==null && !raw.plusActive && raw.stops.length>=5)
+      return alert("Free limit of 5 stops reached. Upgrade to Plus.");
 
-      // Enforce free-tier stop limit
-      if(editIdx == null && !data.plusActive && data.stops.length >= FREE_MAX_STOPS){
-        return alert(
-          `Free tier limit of ${FREE_MAX_STOPS} stops reached.\n`+
-          `Upgrade to Plus to add more.`
-        );
-      }
+    const {data}=await GH.fetchData();
+    if(editIdx!=null){ data.stops[editIdx]={code,name,times,desc}; editIdx=null; }
+    else data.stops.push({code,name,times,desc});
 
-      if(editIdx != null){
-        data.stops[editIdx] = { code,name,times,desc };
-        editIdx = null;
-      } else {
-        data.stops.push({ code,name,times,desc });
-      }
-      const save = await GH.saveData(data, currentSHA);
-      currentSHA = save.content.sha;
-      f.reset(); renderAll();
-    });
+    const res=await GH.saveData(data,currentSHA);
+    currentSHA=res.content.sha;
+    f.reset(); renderAll();
+  });
 
   function startEdit(i){
-    GH.fetchData().then(({ data })=>{
-      const s = data.stops[i], f = document.getElementById("stopForm");
-      f.code.value  = s.code;
-      f.name.value  = s.name;
-      f.times.value = s.times.join(", ");
-      f.desc.value  = s.desc;
-      editIdx = i;
+    GH.fetchData().then(({data})=>{
+      const s=data.stops[i], f=document.getElementById("stopForm");
+      f.code.value=s.code; f.name.value=s.name;
+      f.times.value=s.times.join(", "); f.desc.value=s.desc;
+      editIdx=i;
     });
   }
 
   async function deleteStop(i){
-    if(!navigator.onLine){ alert("Offline"); return; }
     if(!confirm("Remove this stop?")) return;
-    const { data } = await GH.fetchData();
+    const {data}=await GH.fetchData();
     data.stops.splice(i,1);
-    const save = await GH.saveData(data, currentSHA);
-    currentSHA = save.content.sha;
+    const res=await GH.saveData(data,currentSHA);
+    currentSHA=res.content.sha;
     renderAll();
   }
 
   async function clearAll(){
-    if(!navigator.onLine){ alert("Offline"); return; }
     if(!confirm("Wipe all stops?")) return;
-    const { data } = await GH.fetchData();
-    data.stops = [];
-    const save = await GH.saveData(data, currentSHA);
-    currentSHA = save.content.sha;
+    const {data}=await GH.fetchData();
+    data.stops=[];
+    const res=await GH.saveData(data,currentSHA);
+    currentSHA=res.content.sha;
     renderAll();
   }
-
-  function disconnect(){ location.reload(); }
   </script>
 </body>
 </html>

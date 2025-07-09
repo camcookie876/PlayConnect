@@ -37,50 +37,38 @@
     <p><a href="control.html">Go to Bus Garage</a></p>
   </div>
   <script>
-  // OFFLINE DETECTION
-  const overlayU = document.getElementById("offlineOverlay");
-  function offU(){ overlayU.style.display="flex"; document.body.classList.add("disabled"); }
-  function onU(){ overlayU.style.display="none"; document.body.classList.remove("disabled"); }
-  window.addEventListener("offline",offU);
-  window.addEventListener("online",onU);
-  if(!navigator.onLine) offU();
+  // OFFLINE HANDLING
+  const ov=document.getElementById("offlineOverlay");
+  function oF(){ ov.style.display="flex"; document.body.classList.add("disabled"); }
+  function oN(){ ov.style.display="none"; document.body.classList.remove("disabled"); }
+  window.addEventListener("offline",oF);
+  window.addEventListener("online",oN);
+  if(!navigator.onLine) oF();
 
-  // HTML escape
-  const esc = s => s.replace(/&/g,"&amp;")
-                   .replace(/</g,"&lt;")
-                   .replace(/>/g,"&gt;");
-
-  let dataCache = { busName:"Camcookie Play Conect", stops:[] };
+  const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  let cache={busName:"Camcookie Play Conect",stops:[]};
 
   async function loadData(){
-    try {
-      if(!navigator.onLine) throw "Offline";
-      const res = await fetch("data.json");
-      if(!res.ok) throw "Load failed";
-      dataCache = await res.json();
-      document.title = "Camcookie Play Conect - " + dataCache.busName;
-      document.getElementById("pageTitle").textContent =
-        "Camcookie Play Conect - " + dataCache.busName;
-    } catch(e) {
-      console.error(e);
-    }
+    if(!navigator.onLine) return;
+    const r=await fetch("https://raw.githubusercontent.com/camcookie876/bus-stop-funtime/main/data.json");
+    if(!r.ok) return;
+    cache = await r.json();
+    document.title = "Camcookie Play Conect - "+cache.busName;
+    document.getElementById("pageTitle").textContent =
+      "Camcookie Play Conect - "+cache.busName;
   }
 
   function lookup(e){
     e.preventDefault();
     if(!navigator.onLine){ alert("Offline"); return; }
-    const code = document.getElementById("userCode").value.trim().toLowerCase();
-    const out  = document.getElementById("matchResult");
-    const stop = dataCache.stops.find(s=>s.code.toLowerCase()===code);
-    if(!stop){
-      out.className=""; out.innerHTML="<p>No stop found for that code.</p>";
-      return;
-    }
+    const code=document.getElementById("userCode").value.trim().toLowerCase();
+    const out=document.getElementById("matchResult");
+    const s=cache.stops.find(x=>x.code.toLowerCase()===code);
+    if(!s){ out.className=""; out.innerHTML="<p>No stop found.</p>"; return; }
     out.className=""; out.innerHTML=`
-      <h2>${esc(stop.name)} (${esc(stop.code)})</h2>
-      <p>Times: ${stop.times.map(esc).join(", ")}</p>
-      <p>${esc(stop.desc)}</p>
-    `;
+      <h2>${esc(s.name)} (${esc(s.code)})</h2>
+      <p>Times: ${s.times.map(esc).join(", ")}</p>
+      <p>${esc(s.desc)}</p>`;
   }
 
   document.addEventListener("DOMContentLoaded",()=>{
@@ -89,8 +77,7 @@
     document.getElementById("lookupForm").addEventListener("submit",lookup);
     document.getElementById("userCode").addEventListener("input",()=>{
       const out=document.getElementById("matchResult");
-      out.className="empty";
-      out.textContent="Enter a code above to see your bus times!";
+      out.className="empty"; out.textContent="Enter a code above to see your bus times!";
     });
   });
   </script>

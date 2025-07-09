@@ -4,5 +4,8 @@
   "sessions": {},
   "parents": {},
   "logs": [],
-  "plusActive": false
+  "plusActive": false,
+  "config": {
+    "kidExpiry": 600000
+  }
 }
