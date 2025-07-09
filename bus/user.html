@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camcookie Play Conect</title>
+  <style>
+    body{font-family:Arial,sans-serif;margin:0;padding:20px;
+      background:linear-gradient(-45deg,#a1c4fd,#c2e9fb,#ff9a9e,#fad0c4);
+      background-size:400% 400%;animation:bg 12s ease infinite;color:#333;
+      overflow-x:hidden;}
+    @keyframes bg{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    header{text-align:center;margin-bottom:20px;}h1{margin:0;}
+    .container{max-width:600px;margin:auto;}
+    input,button{width:100%;padding:10px;margin:8px 0;
+      border:1px solid #ccc;border-radius:4px;box-sizing:border-box;font-size:1rem;}
+    button{border:none;background:#0078d4;color:#fff;padding:10px;
+      cursor:pointer;font-weight:bold;}button:hover{background:#005a9e;}
+    #matchResult{margin-top:20px;color:#333;} .empty{color:#666;}
+    a{text-decoration:none;color:#0078d4;}
+    #offlineOverlay{position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.8);color:#fff;display:flex;
+      align-items:center;justify-content:center;font-size:1.5rem;z-index:9999;display:none;}
+    .disabled *{pointer-events:none;opacity:0.5;}
+  </style>
+</head>
+<body>
+  <div id="offlineOverlay">You are offline. Please reconnect.</div>
+  <header><h1 id="pageTitle">Camcookie Play Conect</h1></header>
+  <div class="container">
+    <form id="lookupForm">
+      <input id="userCode" placeholder="Enter stop code" required>
+      <button type="submit">Show Times</button>
+    </form>
+    <div id="matchResult" class="empty">
+      Enter a code above to see your bus times!
+    </div>
+    <p><a href="control.html">Go to Bus Garage</a></p>
+  </div>
+  <script>
+  // OFFLINE DETECTION
+  const overlayU = document.getElementById("offlineOverlay");
+  function offU(){ overlayU.style.display="flex"; document.body.classList.add("disabled"); }
+  function onU(){ overlayU.style.display="none"; document.body.classList.remove("disabled"); }
+  window.addEventListener("offline",offU);
+  window.addEventListener("online",onU);
+  if(!navigator.onLine) offU();
+
+  // HTML escape
+  const esc = s => s.replace(/&/g,"&amp;")
+                   .replace(/</g,"&lt;")
+                   .replace(/>/g,"&gt;");
+
+  let dataCache = { busName:"Camcookie Play Conect", stops:[] };
+
+  async function loadData(){
+    try {
+      if(!navigator.onLine) throw "Offline";
+      const res = await fetch("data.json");
+      if(!res.ok) throw "Load failed";
+      dataCache = await res.json();
+      document.title = "Camcookie Play Conect - " + dataCache.busName;
+      document.getElementById("pageTitle").textContent =
+        "Camcookie Play Conect - " + dataCache.busName;
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function lookup(e){
+    e.preventDefault();
+    if(!navigator.onLine){ alert("Offline"); return; }
+    const code = document.getElementById("userCode").value.trim().toLowerCase();
+    const out  = document.getElementById("matchResult");
+    const stop = dataCache.stops.find(s=>s.code.toLowerCase()===code);
+    if(!stop){
+      out.className=""; out.innerHTML="<p>No stop found for that code.</p>";
+      return;
+    }
+    out.className=""; out.innerHTML=`
+      <h2>${esc(stop.name)} (${esc(stop.code)})</h2>
+      <p>Times: ${stop.times.map(esc).join(", ")}</p>
+      <p>${esc(stop.desc)}</p>
+    `;
+  }
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    loadData();
+    setInterval(loadData,30000);
+    document.getElementById("lookupForm").addEventListener("submit",lookup);
+    document.getElementById("userCode").addEventListener("input",()=>{
+      const out=document.getElementById("matchResult");
+      out.className="empty";
+      out.textContent="Enter a code above to see your bus times!";
+    });
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camcookie Play Conect - Parent Dashboard</title>
+  <style>
+    body{font-family:Arial,sans-serif;margin:0;padding:20px;
+      background:linear-gradient(-45deg,#fad0c4,#ffd194,#ace0f9,#bee7e8);
+      background-size:400% 400%;animation:bg 20s ease infinite;color:#333;}
+    @keyframes bg{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    .container{max-width:700px;margin:auto;}
+    .box{background:#fff;padding:20px;margin-bottom:20px;
+      border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+    label,input,button{display:block;width:100%;margin:8px 0;}
+    input{padding:8px;border:1px solid #ccc;border-radius:4px;font-size:1rem;}
+    button{padding:10px;font-size:1rem;font-weight:bold;border:none;
+      border-radius:4px;background:#0078d4;color:#fff;cursor:pointer;}
+    button:hover{background:#005a9e;}
+    table{width:100%;border-collapse:collapse;margin-top:10px;}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;}
+    th{background:#f7f7f7;} .hidden{display:none;}
+    #offlineOverlay{position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.8);color:#fff;display:flex;
+      align-items:center;justify-content:center;font-size:1.5rem;z-index:9999;display:none;}
+    .disabled *{pointer-events:none;opacity:0.5;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+</head>
+<body>
+  <div id="offlineOverlay">You are offline. Please reconnect.</div>
+  <header class="container">
+    <h1>Camcookie Play Conect - Parent Dashboard</h1>
+  </header>
+  <div class="container">
+
+    <!-- AUTH -->
+    <div id="auth" class="box">
+      <h2>Login / Register</h2>
+      <form id="loginForm">
+        <input name="user" placeholder="Username" required>
+        <input name="pass" type="password" placeholder="Password" required>
+        <button>Login</button>
+      </form>
+      <hr>
+      <form id="regForm">
+        <input name="user" placeholder="New username" required>
+        <input name="pass" type="password" placeholder="New password" required>
+        <button>Register</button>
+      </form>
+    </div>
+
+    <!-- MAIN DASH -->
+    <div id="dash" class="hidden">
+
+      <!-- GitHub PAT -->
+      <div class="box">
+        <h2>GitHub Personal Access Token</h2>
+        <p>Enter a PAT (repo scope). Valid for 5 minutes.</p>
+        <input id="pat" type="password" placeholder="GitHub PAT">
+        <button onclick="startPAT()">Connect</button>
+      </div>
+
+      <div id="controls" class="hidden">
+
+        <!-- Plus Subscription Toggle -->
+        <div class="box">
+          <h2>Plus Subscription</h2>
+          <p>Free tier limits: 5 stops, 1 session code.</p>
+          <p><a href="https://paypal.me/yourlink" target="_blank">
+            <button>Buy Plus</button>
+          </a></p>
+          <button onclick="togglePlus()" id="plusBtn"></button>
+        </div>
+
+        <!-- Bus Name -->
+        <div class="box">
+          <h2>Bus Name</h2>
+          <input id="busNameInput" placeholder="Enter bus name">
+          <button onclick="updateBusName()">Update Bus Name</button>
+        </div>
+
+        <!-- Stops -->
+        <div class="box">
+          <h2>All Stops</h2>
+          <button onclick="showStops()">Refresh Stops</button>
+          <table>
+            <thead>
+              <tr><th>Code</th><th>Name</th><th>Times</th><th>Description</th></tr>
+            </thead>
+            <tbody id="stopsTable"></tbody>
+          </table>
+        </div>
+
+        <!-- Sessions -->
+        <div class="box">
+          <h2>Kid Session Codes</h2>
+          <button onclick="showSessions()">Refresh Codes</button>
+          <button onclick="genSession()">Create Code</button>
+          <table>
+            <thead><tr><th>Code</th><th>Created</th><th>Revoke</th></tr></thead>
+            <tbody id="sessTable"></tbody>
+          </table>
+        </div>
+
+        <!-- Logout -->
+        <button onclick="location.reload()">Logout</button>
+      </div>
+    </div>
+
+  </div>
+  <script>
+  // OFFLINE DETECTION
+  const overlayP=document.getElementById("offlineOverlay");
+  function offP(){ overlayP.style.display="flex"; document.body.classList.add("disabled"); }
+  function onP(){ overlayP.style.display="none"; document.body.classList.remove("disabled"); }
+  window.addEventListener("offline",offP);
+  window.addEventListener("online",onP);
+  if(!navigator.onLine) offP();
+
+  // GitHubStorage Helper
+  const GH = {
+    owner:"YOUR_GH_USERNAME", repo:"bus-stop-funtime", branch:"main",
+    token:null, expires:0,
+    init(owner,repo,pat,branch="main"){
+      this.owner=owner; this.repo=repo; this.branch=branch;
+      this.token=pat; this.expires=Date.now()+5*60e3;
+      setTimeout(()=>this.token=null,5*60e3+1000);
+    },
+    async fetchData(){
+      if(!navigator.onLine) throw "Offline";
+      if(!this.token||Date.now()>this.expires) throw "Session expired";
+      const url=`https://api.github.com/repos/${this.owner}/${this.repo}`+
+                `/contents/data.json?ref=${this.branch}`;
+      const res=await fetch(url,{headers:{Authorization:`token ${this.token}`}});
+      if(!res.ok) throw await res.text();
+      const {content,sha}=await res.json();
+      return {data:JSON.parse(atob(content)),sha};
+    },
+    async saveData(newData,sha){
+      if(!navigator.onLine) throw "Offline";
+      if(!this.token||Date.now()>this.expires) throw "Session expired";
+      const url=`https://api.github.com/repos/${this.owner}/${this.repo}`+
+                `/contents/data.json`;
+      const body={message:"Update via Camcookie Play Conect",
+                  branch:this.branch,
+                  content:btoa(JSON.stringify(newData,null,2)),
+                  sha};
+      const res=await fetch(url,{method:"PUT",
+        headers:{
+          Authorization:`token ${this.token}`,
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify(body)});
+      if(!res.ok) throw await res.text();
+      return await res.json();
+    }
+  };
+
+  // Utils
+  const esc=s=>s.replace(/&/g,"&amp;")
+               .replace(/</g,"&lt;")
+               .replace(/>/g,"&gt;");
+  const PKEY="busParents";
+  function getParents(){ return JSON.parse(localStorage.getItem(PKEY)||"{}"); }
+  function saveParents(p){ localStorage.setItem(PKEY,JSON.stringify(p)); }
+
+  // AUTH
+  document.getElementById("regForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const f=e.target,u=f.user.value.trim(),p=f.pass.value;
+    const parents=getParents();
+    if(parents[u]) return alert("Username taken");
+    bcrypt.hash(p,10,(_,h)=>{ parents[u]=h; saveParents(parents);
+      alert("Registered—please log in"); f.reset();
+    });
+  });
+  document.getElementById("loginForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const f=e.target,u=f.user.value.trim(),p=f.pass.value;
+    const parents=getParents();
+    if(!parents[u]) return alert("No such user");
+    bcrypt.compare(p,parents[u],(_,ok)=>{
+      if(!ok) return alert("Wrong password");
+      document.getElementById("auth").classList.add("hidden");
+      document.getElementById("dash").classList.remove("hidden");
+    });
+  });
+
+  // Connect PAT
+  function startPAT(){
+    const pat=document.getElementById("pat").value.trim();
+    if(!pat) return alert("Enter a PAT");
+    GH.init(GH.owner,GH.repo,pat,GH.branch);
+    document.getElementById("controls").classList.remove("hidden");
+    refreshPlusUI();
+  }
+
+  // PLUS TOGGLE
+  async function refreshPlusUI(){
+    const { data } = await GH.fetchData();
+    const btn = document.getElementById("plusBtn");
+    btn.textContent = data.plusActive? "Disable Plus" : "Enable Plus";
+  }
+  async function togglePlus(){
+    const { data, sha } = await GH.fetchData();
+    data.plusActive = !data.plusActive;
+    await GH.saveData(data, sha);
+    refreshPlusUI();
+    alert("Plus is now " + (data.plusActive? "ENABLED" : "DISABLED"));
+  }
+
+  // BUS NAME
+  async function updateBusName(){
+    if(!navigator.onLine) return alert("Offline");
+    const name=document.getElementById("busNameInput").value.trim();
+    if(!name) return alert("Enter a bus name");
+    const { data, sha } = await GH.fetchData();
+    data.busName = name;
+    await GH.saveData(data, sha);
+    alert("Bus name updated");
+  }
+
+  // STOPS VIEW
+  async function showStops(){
+    if(!navigator.onLine) return alert("Offline");
+    const { data } = await GH.fetchData();
+    const tb = document.getElementById("stopsTable");
+    tb.innerHTML="";
+    data.stops.forEach(s=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`
+        <td>${esc(s.code)}</td>
+        <td>${esc(s.name)}</td>
+        <td>${esc(s.times.join(", "))}</td>
+        <td>${esc(s.desc)}</td>
+      `;
+      tb.appendChild(tr);
+    });
+  }
+
+  // SESSIONS
+  const FREE_MAX_SESSIONS = 1;
+  function rndCode(){
+    const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; let c="";
+    for(let i=0;i<8;i++) c+=chars.charAt(Math.floor(Math.random()*chars.length));
+    return c;
+  }
+  async function showSessions(){
+    if(!navigator.onLine) return alert("Offline");
+    const { data } = await GH.fetchData();
+    const tb=document.getElementById("sessTable");
+    tb.innerHTML="";
+    for(const c in data.sessions){
+      const row=data.sessions[c];
+      const tr=document.createElement("tr");
+      tr.innerHTML=`
+        <td>${esc(c)}</td>
+        <td>${new Date(row.created).toLocaleString()}</td>
+        <td><button onclick="revoke('${c}')">Revoke</button></td>
+      `;
+      tb.appendChild(tr);
+    }
+  }
+  async function genSession(){
+    if(!navigator.onLine) return alert("Offline");
+    const { data, sha } = await GH.fetchData();
+    // enforce free-tier session limit
+    if(!data.plusActive && Object.keys(data.sessions).length >= FREE_MAX_SESSIONS){
+      return alert(
+        `Free tier limit of ${FREE_MAX_SESSIONS} session code reached.\n`+
+        `Upgrade to Plus for more.`
+      );
+    }
+    const code = rndCode();
+    data.sessions[code] = { token:GH.token, created:Date.now() };
+    await GH.saveData(data, sha);
+    alert("Share this code with your child:\n\n" + code);
+    showSessions();
+  }
+  async function revoke(c){
+    if(!navigator.onLine) return alert("Offline");
+    if(!confirm(`Revoke ${c}?`)) return;
+    const { data, sha } = await GH.fetchData();
+    delete data.sessions[c];
+    await GH.saveData(data, sha);
+    showSessions();
+  }
+  </script>
+</body>
+</html>
