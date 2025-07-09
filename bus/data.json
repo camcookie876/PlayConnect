@@ -1,11 +1,15 @@
 {
   "busName": "My Bus",
   "stops": [],
+  "streets": [],
   "sessions": {},
   "parents": {},
   "logs": [],
   "plusActive": false,
   "config": {
-    "kidExpiry": 600000
+    "kidExpiry": 600000,
+    "garageTitle": "Control Center",
+    "garageColor": "#0078d4",
+    "announcement": ""
   }
 }
